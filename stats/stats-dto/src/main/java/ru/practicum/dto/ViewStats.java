@@ -1,10 +1,17 @@
 package main.java.ru.practicum.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.Objects;
 
 public class ViewStats {
+    @NotBlank(message = "App cannot be blank")
     private String app;
+
+    @NotBlank(message = "URI cannot be blank")
     private String uri;
+
+    @NotNull(message = "Hits cannot be null")
     private Long hits;
 
     public String getApp() {
