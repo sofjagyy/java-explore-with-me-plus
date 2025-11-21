@@ -1,14 +1,61 @@
 services:
-  stats-server:
+  stat-db:
+    image: postgres:16.1
+    container_name: stat-db
+    ports:
+      - "6642:5432"
+    environment:
+      POSTGRES_DB: stat
+      POSTGRES_USER: stat
+      POSTGRES_PASSWORD: stat
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stat -d stat"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  stat-server:
+    build: ./stat/stat-server
+    container_name: stat-server
     ports:
       - "9090:9090"
+    depends_on:
+      stat-db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://stat-db:5432/stat
+      SPRING_DATASOURCE_USERNAME: stat
+      SPRING_DATASOURCE_PASSWORD: stat
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
 
-  stats-db:
+  main-db:
     image: postgres:16.1
+    container_name: main-db
+    ports:
+      - "6543:5432"
+    environment:
+      POSTGRES_DB: main
+      POSTGRES_USER: main
+      POSTGRES_PASSWORD: main
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U main -d main"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  ewm-service:
+  main-service:
+    build: ./main-service
+    container_name: main-service
     ports:
       - "8080:8080"
-
-  ewm-db:
-    image: postgres:16.1
+    depends_on:
+      main-db:
+        condition: service_healthy
+      stat-server:
+        condition: service_started
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://main-db:5432/main
+      SPRING_DATASOURCE_USERNAME: main
+      SPRING_DATASOURCE_PASSWORD: main
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      STAT_CLIENT_URL: http://stat-server:9090
