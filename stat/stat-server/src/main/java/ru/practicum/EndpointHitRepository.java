@@ -10,19 +10,24 @@ import java.util.List;
 
 public interface EndpointHitRepository extends JpaRepository<EndpointHit, Long> {
 
-    @Query("SELECT new ru.practicum.dto.ViewStatsDto(" +
-           "   h.app, " +
-           "   h.uri, " +
-           "   CASE WHEN :unique = true THEN COUNT(DISTINCT h.ip) ELSE COUNT(h.ip) END " +
-           ") " +
+    @Query("SELECT new ru.practicum.dto.ViewStatsDto(h.app, h.uri, COUNT(h.ip)) " +
            "FROM EndpointHit h " +
            "WHERE h.timestamp BETWEEN :start AND :end " +
-           "AND ((:uris) IS NULL OR h.uri IN (:uris)) " +
+           "AND (:uris IS NULL OR h.uri IN :uris) " +
            "GROUP BY h.app, h.uri " +
-           "ORDER BY CASE WHEN :unique = true THEN COUNT(DISTINCT h.ip) ELSE COUNT(h.ip) END DESC")
+           "ORDER BY COUNT(h.ip) DESC")
     List<ViewStatsDto> findStats(@Param("start") LocalDateTime start,
                                  @Param("end") LocalDateTime end,
-                                 @Param("uris") List<String> uris,
-                                 @Param("unique") Boolean unique);
+                                 @Param("uris") List<String> uris);
+
+    @Query("SELECT new ru.practicum.dto.ViewStatsDto(h.app, h.uri, COUNT(DISTINCT h.ip)) " +
+           "FROM EndpointHit h " +
+           "WHERE h.timestamp BETWEEN :start AND :end " +
+           "AND (:uris IS NULL OR h.uri IN :uris) " +
+           "GROUP BY h.app, h.uri " +
+           "ORDER BY COUNT(DISTINCT h.ip) DESC")
+    List<ViewStatsDto> findUniqueStats(@Param("start") LocalDateTime start,
+                                       @Param("end") LocalDateTime end,
+                                       @Param("uris") List<String> uris);
 }
 

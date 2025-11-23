@@ -30,11 +30,10 @@ public class StatsServiceImpl implements StatsService {
             throw new IllegalArgumentException("Старт должен быть до окончания");
         }
 
-        boolean isUnique = unique != null && unique;
-        List<String> urisToSearch = (uris == null || uris.isEmpty()) ? null : uris;
-
-        List<ViewStatsDto> stats = repository.findStats(start, end, urisToSearch, isUnique);
-
-        return stats;
+        if (unique != null && unique) {
+            return repository.findUniqueStats(start, end, uris);
+        } else {
+            return repository.findStats(start, end, uris);
+        }
     }
 }
