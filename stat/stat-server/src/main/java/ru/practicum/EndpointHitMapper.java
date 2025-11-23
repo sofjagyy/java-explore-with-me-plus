@@ -2,6 +2,7 @@ package ru.practicum;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import ru.practicum.dto.EndpointHitDto;
 
 @Mapper(componentModel = "spring")
 public interface EndpointHitMapper {
