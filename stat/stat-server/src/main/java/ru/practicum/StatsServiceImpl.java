@@ -30,6 +30,14 @@ public class StatsServiceImpl implements StatsService {
             throw new IllegalArgumentException("Старт должен быть до окончания");
         }
 
+        if (uris == null || uris.isEmpty()) {
+            if (unique != null && unique) {
+                return repository.findUniqueStats(start, end);
+            } else {
+                return repository.findStats(start, end);
+            }
+        }
+
         if (unique != null && unique) {
             return repository.findUniqueStats(start, end, uris);
         } else {
