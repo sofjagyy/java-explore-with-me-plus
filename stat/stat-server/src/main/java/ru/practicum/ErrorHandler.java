@@ -3,6 +3,7 @@ package ru.practicum;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -51,6 +52,17 @@ public class ErrorHandler {
         return new ApiError(
                 HttpStatus.BAD_REQUEST,
                 "Invalid request parameters",
+                e.getMessage(),
+                null
+        );
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleMissingServletRequestParameterException(MissingServletRequestParameterException e) {
+        return new ApiError(
+                HttpStatus.BAD_REQUEST,
+                "Required parameter is missing",
                 e.getMessage(),
                 null
         );
