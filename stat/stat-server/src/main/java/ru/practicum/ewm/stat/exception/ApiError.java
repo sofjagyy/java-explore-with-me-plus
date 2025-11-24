@@ -1,4 +1,4 @@
-package ru.practicum.ewm.stats.exception;
+package ru.practicum.ewm.stat.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
