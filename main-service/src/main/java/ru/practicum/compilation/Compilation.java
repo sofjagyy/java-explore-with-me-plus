@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 import ru.practicum.event.Event;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -32,6 +33,6 @@ public class Compilation {
             inverseJoinColumns = @JoinColumn(name = "event_id")
     )
     @ToString.Exclude
-    private Set<Event> events;
+    private Set<Long> eventIds = new HashSet<>();
 }
 
