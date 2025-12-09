@@ -10,7 +10,13 @@ public interface RequestRepository extends JpaRepository<ParticipationRequest, L
 
     Optional<ParticipationRequest> findByEventIdAndRequesterId(Long eventId, Long userId);
 
-    List<ParticipationRequest> findAllByEventIdAndStatus(Long eventId, String status);
+    List<ParticipationRequest> findAllByEventIdAndStatus(Long eventId, ru.practicum.request.enums.RequestStatus status);
 
     List<ParticipationRequest> findAllByRequesterId(Long requesterId);
+    
+    Long countByEventIdAndStatus(Long eventId, ru.practicum.request.enums.RequestStatus status);
+    
+    List<ParticipationRequest> findAllByEventId(Long eventId);
+    
+    List<ParticipationRequest> findAllByIdIn(List<Long> ids);
 }

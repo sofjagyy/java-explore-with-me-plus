@@ -4,15 +4,22 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.event.Event;
+import ru.practicum.event.EventState;
+import ru.practicum.event.dto.EventFullDto;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.DuplicatedException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.request.dto.ParticipationRequestDto;
 import ru.practicum.request.enums.RequestStatus;
 import ru.practicum.request.mapper.RequestMapper;
+import ru.practicum.event.mapper.EventMapper;
+import ru.practicum.user.User;
+import ru.practicum.user.mapper.UserMapper;
 import ru.practicum.request.model.ParticipationRequest;
 import ru.practicum.request.repository.RequestRepository;
 import ru.practicum.user.dto.UserDto;
+import ru.practicum.user.service.UserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,6 +34,8 @@ public class RequestServiceImpl implements RequestService {
     private final RequestRepository repository;
     private final UserService userService;
     private final RequestMapper mapper;
+    private final UserMapper userMapper;
+    private final EventMapper eventMapper;
 
 
     @Override
@@ -38,21 +47,34 @@ public class RequestServiceImpl implements RequestService {
         if (event.getInitiator().getId().equals(userId))
             throw new ConflictException("Инициатор события не может добавить запрос на участие в своём событии");
 
-        if (event.getParticipantLimit() != 0 && !event.getState().equals(EventState.PUBLISHED.toString()))
+        if (event.getParticipantLimit() != 0 && event.getState() != EventState.PUBLISHED)
             throw new ConflictException("Нельзя участвовать в неопубликованном событии");
 
-        int confirmedRequestsCount = repository.findAllByEventIdAndStatus(eventId, RequestStatus.CONFIRMED.toString()).size();
+        int confirmedRequestsCount = repository.findAllByEventIdAndStatus(eventId, RequestStatus.CONFIRMED).size();
 
         if (event.getParticipantLimit() > 0 && confirmedRequestsCount >= event.getParticipantLimit())
             throw new ConflictException("Достигнут лимит запросов на участие");
 
-        UserDto user = userService.get(userId);
+        UserDto userDto = userService.getUser(userId);
+        User user = new User();
+        user.setId(userDto.getId());
+        user.setName(userDto.getName());
+        user.setEmail(userDto.getEmail());
+        
+        Event eventEntity = new Event();
+        eventEntity.setId(event.getId());
+
         RequestStatus status = RequestStatus.PENDING;
         if (!event.getRequestModeration() || event.getParticipantLimit().equals(0)) {
             status = RequestStatus.CONFIRMED;
         }
 
-        ParticipationRequest request = ParticipationRequest.builder().requesterId(user.getId()).eventId(event.getId()).status(status.toString()).created(LocalDateTime.now()).build();
+        ParticipationRequest request = ParticipationRequest.builder()
+                .requesterId(user)
+                .eventId(eventEntity)
+                .status(status)
+                .created(LocalDateTime.now())
+                .build();
 
         ParticipationRequest participationRequest = repository.save(request);
         repository.flush();
@@ -62,7 +84,7 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public List<ParticipationRequestDto> getRequests(Long userId) {
-        UserDto user = userService.get(userId);
+        UserDto user = userService.getUser(userId);
         return repository.findAllByRequesterId(user.getId()).stream().map(mapper::toDto).collect(Collectors.toList());
     }
 
@@ -71,13 +93,13 @@ public class RequestServiceImpl implements RequestService {
     public ParticipationRequestDto cancelRequest(Long userId, Long requestId) {
         ParticipationRequest request = repository.findById(requestId).orElseThrow(() -> new NotFoundException("Заявка не найдена"));
 
-        UserDto user = userService.get(request.getRequesterId());
+        UserDto user = userService.getUser(request.getRequesterId().getId());
         if (!user.getId().equals(userId)) {
             log.error("Попытка отменить чужую заявку: userId={}, заявка принадлежит userId={}", userId, user.getId());
             throw new ConflictException("Пользователь, который не является автором заявки, не может её отменить.");
         }
 
-        request.setStatus(RequestStatus.CANCELED.toString());
+        request.setStatus(RequestStatus.CANCELED);
         log.info("Статус заявки с id={} изменен на CANCELED", requestId);
 
         ParticipationRequestDto requestDto = mapper.toDto(repository.save(request));
