@@ -19,7 +19,7 @@ public interface EventMapper {
     @Mapping(target = "state", ignore = true)
     @Mapping(target = "createdOn", ignore = true)
     @Mapping(target = "publishedOn", ignore = true)
-    @Mapping(target = "location", ignore = true) 
+    @Mapping(target = "location", ignore = true)
     Event toEvent(NewEventDto newEventDto);
 
     @Mapping(target = "id", ignore = true)

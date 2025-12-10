@@ -54,7 +54,7 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryDto update(Long catId, CategoryDto categoryDto) {
         Category category = categoryRepository.findById(catId)
                 .orElseThrow(() -> new NotFoundException("Category with id=" + catId + " was not found"));
-        
+
         category.setName(categoryDto.getName());
 
         try {
