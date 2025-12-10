@@ -33,6 +33,6 @@ public class Compilation {
             inverseJoinColumns = @JoinColumn(name = "event_id")
     )
     @ToString.Exclude
-    private Set<Long> eventIds = new HashSet<>();
+    private Set<Event> events = new HashSet<>();
 }
 

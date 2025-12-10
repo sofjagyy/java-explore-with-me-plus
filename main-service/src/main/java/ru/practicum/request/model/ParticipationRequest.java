@@ -31,10 +31,10 @@ public class ParticipationRequest {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", nullable = false)
     @ToString.Exclude
-    private Event eventId;
+    private Event event;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requester_id", nullable = false)
     @ToString.Exclude
-    private User requesterId;
+    private User requester;
 }
