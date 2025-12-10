@@ -44,7 +44,10 @@ public class CompilationServiceImpl implements CompilationService {
 
         Compilation savedCompilation = compilationRepository.save(compilation);
 
-        return CompilationMapper.toCompilationDto(savedCompilation, eventMapper);
+        Compilation compilationWithEvents = compilationRepository.findByIdWithEvents(savedCompilation.getId())
+                .orElse(savedCompilation);
+
+        return CompilationMapper.toCompilationDto(compilationWithEvents, eventMapper);
     }
 
     @Override
@@ -64,7 +67,7 @@ public class CompilationServiceImpl implements CompilationService {
     public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest updateRequest) {
         log.info("Updating compilation with id: {}", compId);
 
-        Compilation compilation = compilationRepository.findById(compId)
+        Compilation compilation = compilationRepository.findByIdWithEvents(compId)
                 .orElseThrow(() -> new NotFoundException("Compilation with id=" + compId + " was not found"));
 
         if (updateRequest.getTitle() != null) {
@@ -81,7 +84,11 @@ public class CompilationServiceImpl implements CompilationService {
         }
 
         Compilation updatedCompilation = compilationRepository.save(compilation);
-        return CompilationMapper.toCompilationDto(updatedCompilation, eventMapper);
+
+        Compilation compilationWithEvents = compilationRepository.findByIdWithEvents(updatedCompilation.getId())
+                .orElse(updatedCompilation);
+
+        return CompilationMapper.toCompilationDto(compilationWithEvents, eventMapper);
     }
 
     @Override
@@ -105,7 +112,7 @@ public class CompilationServiceImpl implements CompilationService {
     public CompilationDto getCompilationById(Long compId) {
         log.info("Getting compilation with id: {}", compId);
 
-        Compilation compilation = compilationRepository.findById(compId)
+        Compilation compilation = compilationRepository.findByIdWithEvents(compId)
                 .orElseThrow(() -> new NotFoundException("Compilation with id=" + compId + " was not found"));
 
         return CompilationMapper.toCompilationDto(compilation, eventMapper);
