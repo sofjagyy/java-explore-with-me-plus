@@ -18,7 +18,6 @@ import ru.practicum.event.repository.EventRepository;
 import ru.practicum.event.Event;
 
 import java.util.List;
-import java.util.Set;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 
@@ -42,7 +41,7 @@ public class CompilationServiceImpl implements CompilationService {
             List<Event> events = eventRepository.findAllById(newCompilationDto.getEvents());
             compilation.setEvents(new HashSet<>(events));
         }
-        
+
         Compilation savedCompilation = compilationRepository.save(compilation);
 
         return CompilationMapper.toCompilationDto(savedCompilation, eventMapper);

@@ -22,11 +22,17 @@ public interface EventMapper {
     @Mapping(target = "location", ignore = true) 
     Event toEvent(NewEventDto newEventDto);
 
+    @Mapping(target = "id", ignore = true)
     Location toLocation(LocationDto locationDto);
+
     LocationDto toLocationDto(Location location);
 
+    @Mapping(target = "confirmedRequests", ignore = true)
+    @Mapping(target = "views", ignore = true)
     EventFullDto toEventFullDto(Event event);
-    
+
+    @Mapping(target = "confirmedRequests", ignore = true)
+    @Mapping(target = "views", ignore = true)
     EventShortDto toEventShortDto(Event event);
 }
 

@@ -60,7 +60,7 @@ public class RequestServiceImpl implements RequestService {
         user.setId(userDto.getId());
         user.setName(userDto.getName());
         user.setEmail(userDto.getEmail());
-        
+
         Event eventEntity = new Event();
         eventEntity.setId(event.getId());
 

@@ -152,6 +152,7 @@ public class EventServiceImpl implements EventService {
 
         Sort sortOrder = Sort.by(Sort.Direction.ASC, "eventDate");
         if ("VIEWS".equals(sort)) {
+            // Сортировка по просмотрам будет выполнена после получения всех данных
         } else {
             sortOrder = Sort.by(Sort.Direction.ASC, "eventDate");
         }

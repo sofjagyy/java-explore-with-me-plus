@@ -9,8 +9,8 @@ import java.util.Optional;
 
 public interface EventRepository extends JpaRepository<Event, Long>, QuerydslPredicateExecutor<Event> {
     boolean existsByCategoryId(Long categoryId);
-    
+
     Optional<Event> findByIdAndInitiatorId(Long eventId, Long initiatorId);
-    
+
     List<Event> findAllByInitiatorId(Long initiatorId, org.springframework.data.domain.Pageable pageable);
 }

@@ -56,7 +56,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .orElseThrow(() -> new NotFoundException("Category with id=" + catId + " was not found"));
         
         category.setName(categoryDto.getName());
-        
+
         try {
             category = categoryRepository.saveAndFlush(category);
         } catch (Exception e) {

@@ -39,14 +39,14 @@ public class UserServiceImpl implements UserService {
     public List<UserDto> getUsers(List<Long> ids, int from, int size) {
         int page = from / size;
         PageRequest pageRequest = PageRequest.of(page, size);
-        
+
         List<User> users;
         if (ids != null && !ids.isEmpty()) {
             users = userRepository.findAllByIdIn(ids, pageRequest).getContent();
         } else {
             users = userRepository.findAll(pageRequest).getContent();
         }
-        
+
         return users.stream()
                 .map(userMapper::toUserDto)
                 .collect(Collectors.toList());
