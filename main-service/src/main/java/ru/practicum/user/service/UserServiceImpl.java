@@ -17,14 +17,12 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
     @Override
-    @Transactional
     public UserDto createUser(UserRequestDto userRequestDto) {
         User user = userMapper.toEntity(userRequestDto);
         try {
@@ -60,7 +58,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public void deleteUser(Long userId) {
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException("User with id=" + userId + " was not found");
