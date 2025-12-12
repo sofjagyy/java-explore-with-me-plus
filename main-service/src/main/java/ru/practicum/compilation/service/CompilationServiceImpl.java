@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.compilation.dto.CompilationDto;
 import ru.practicum.compilation.dto.NewCompilationDto;
-import ru.practicum.compilation.dto.UpdateCompilationRequest;
+import ru.practicum.compilation.dto.UpdateCompilationDto;
 import ru.practicum.compilation.mapper.CompilationMapper;
 import ru.practicum.compilation.Compilation;
 import ru.practicum.compilation.repository.CompilationRepository;
@@ -58,21 +58,21 @@ public class CompilationServiceImpl implements CompilationService {
 
     @Override
     @Transactional
-    public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest updateRequest) {
+    public CompilationDto updateCompilation(Long compId, UpdateCompilationDto updateCompilationDto) {
         log.info("Updating compilation with id: {}", compId);
 
         Compilation compilation = getCompilationByIdOrThrow(compId);
 
-        if (updateRequest.getTitle() != null) {
-            compilation.setTitle(updateRequest.getTitle());
+        if (updateCompilationDto.getTitle() != null) {
+            compilation.setTitle(updateCompilationDto.getTitle());
         }
 
-        if (updateRequest.getPinned() != null) {
-            compilation.setPinned(updateRequest.getPinned());
+        if (updateCompilationDto.getPinned() != null) {
+            compilation.setPinned(updateCompilationDto.getPinned());
         }
 
-        if (updateRequest.getEvents() != null) {
-            List<Event> events = eventRepository.findAllById(updateRequest.getEvents());
+        if (updateCompilationDto.getEvents() != null) {
+            List<Event> events = eventRepository.findAllById(updateCompilationDto.getEvents());
             compilation.setEvents(new HashSet<>(events));
         }
 
