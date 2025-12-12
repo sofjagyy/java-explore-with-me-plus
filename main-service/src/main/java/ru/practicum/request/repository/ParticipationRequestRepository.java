@@ -6,7 +6,7 @@ import ru.practicum.request.model.ParticipationRequest;
 import java.util.List;
 import java.util.Optional;
 
-public interface RequestRepository extends JpaRepository<ParticipationRequest, Long> {
+public interface ParticipationRequestRepository extends JpaRepository<ParticipationRequest, Long> {
 
     Optional<ParticipationRequest> findByEventIdAndRequesterId(Long eventId, Long userId);
 

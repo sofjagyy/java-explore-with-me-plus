@@ -5,7 +5,7 @@ import ru.practicum.event.dto.EventFullDto;
 
 import java.util.List;
 
-public interface RequestService {
+public interface ParticipationRequestService {
 
     ParticipationRequestDto create(Long userId, Long eventId, EventFullDto eventById);
 

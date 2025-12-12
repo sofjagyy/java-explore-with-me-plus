@@ -8,7 +8,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.event.service.EventService;
 import ru.practicum.request.dto.ParticipationRequestDto;
-import ru.practicum.request.service.RequestService;
+import ru.practicum.request.service.ParticipationRequestService;
 
 import java.util.List;
 
@@ -17,9 +17,9 @@ import java.util.List;
 @AllArgsConstructor
 @RequestMapping("/users/{userId}/requests")
 @Validated
-public class RequestController {
+public class ParticipationRequestController {
 
-    private final RequestService requestService;
+    private final ParticipationRequestService requestService;
     private final EventService eventService;
 
     @PostMapping

@@ -6,7 +6,7 @@ import ru.practicum.request.model.ParticipationRequest;
 import ru.practicum.request.dto.ParticipationRequestDto;
 
 @Mapper(componentModel = "spring")
-public interface RequestMapper {
+public interface ParticipationRequestMapper {
 
     @Mapping(source = "id", target = "id")
     @Mapping(source = "created", target = "created")

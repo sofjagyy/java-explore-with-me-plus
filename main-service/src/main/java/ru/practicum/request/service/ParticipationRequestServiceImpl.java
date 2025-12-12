@@ -12,12 +12,10 @@ import ru.practicum.exception.DuplicatedException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.request.dto.ParticipationRequestDto;
 import ru.practicum.request.enums.RequestStatus;
-import ru.practicum.request.mapper.RequestMapper;
-import ru.practicum.event.mapper.EventMapper;
+import ru.practicum.request.mapper.ParticipationRequestMapper;
 import ru.practicum.user.User;
-import ru.practicum.user.mapper.UserMapper;
 import ru.practicum.request.model.ParticipationRequest;
-import ru.practicum.request.repository.RequestRepository;
+import ru.practicum.request.repository.ParticipationRequestRepository;
 import ru.practicum.user.dto.UserDto;
 import ru.practicum.user.service.UserService;
 
@@ -29,31 +27,32 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
 @Transactional(readOnly = true)
-public class RequestServiceImpl implements RequestService {
+public class ParticipationRequestServiceImpl implements ParticipationRequestService {
 
-    private final RequestRepository repository;
+    private final ParticipationRequestRepository repository;
     private final UserService userService;
-    private final RequestMapper mapper;
-    private final UserMapper userMapper;
-    private final EventMapper eventMapper;
-
+    private final ParticipationRequestMapper mapper;
 
     @Override
     @Transactional
     public ParticipationRequestDto create(Long userId, Long eventId, EventFullDto event) {
-        if (repository.findByEventIdAndRequesterId(eventId, userId).isPresent())
+        if (repository.findByEventIdAndRequesterId(eventId, userId).isPresent()) {
             throw new DuplicatedException("Такая заявка уже создана");
+        }
 
-        if (event.getInitiator().getId().equals(userId))
+        if (event.getInitiator().getId().equals(userId)) {
             throw new ConflictException("Инициатор события не может добавить запрос на участие в своём событии");
+        }
 
-        if (event.getParticipantLimit() != 0 && event.getState() != EventState.PUBLISHED)
+        if (event.getParticipantLimit() != 0 && event.getState() != EventState.PUBLISHED) {
             throw new ConflictException("Нельзя участвовать в неопубликованном событии");
+        }
 
         int confirmedRequestsCount = repository.findAllByEventIdAndStatus(eventId, RequestStatus.CONFIRMED).size();
 
-        if (event.getParticipantLimit() > 0 && confirmedRequestsCount >= event.getParticipantLimit())
+        if (event.getParticipantLimit() > 0 && confirmedRequestsCount >= event.getParticipantLimit()) {
             throw new ConflictException("Достигнут лимит запросов на участие");
+        }
 
         UserDto userDto = userService.getUser(userId);
         User user = new User();
