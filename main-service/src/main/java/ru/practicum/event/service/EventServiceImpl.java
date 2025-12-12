@@ -1,6 +1,7 @@
 package ru.practicum.event.service;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.JPAExpressions;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ import ru.practicum.exception.ValidationException;
 import ru.practicum.request.enums.RequestStatus;
 import ru.practicum.request.mapper.ParticipationRequestMapper;
 import ru.practicum.request.model.ParticipationRequest;
+import ru.practicum.request.model.QParticipationRequest;
 import ru.practicum.request.repository.ConfirmedRequestView;
 import ru.practicum.request.repository.ParticipationRequestRepository;
 import ru.practicum.user.User;
@@ -141,11 +143,17 @@ public class EventServiceImpl implements EventService {
             builder.and(qEvent.eventDate.loe(end));
         }
 
-        Sort sortOrder = Sort.by(Sort.Direction.ASC, "eventDate");
-        if ("VIEWS".equals(params.getSort())) {
-        } else {
-            sortOrder = Sort.by(Sort.Direction.ASC, "eventDate");
+        if (Boolean.TRUE.equals(params.getOnlyAvailable())) {
+            builder.and(qEvent.participantLimit.eq(0)
+                    .or(qEvent.participantLimit.gt(
+                            JPAExpressions.select(QParticipationRequest.participationRequest.count())
+                                    .from(QParticipationRequest.participationRequest)
+                                    .where(QParticipationRequest.participationRequest.event.id.eq(qEvent.id)
+                                            .and(QParticipationRequest.participationRequest.status.eq(RequestStatus.CONFIRMED)))
+                    )));
         }
+
+        Sort sortOrder = Sort.by(Sort.Direction.ASC, "eventDate");
 
         PageRequest pageRequest = PageRequest.of(params.getFrom() / params.getSize(), params.getSize(), sortOrder);
         List<Event> events = eventRepository.findAll(builder, pageRequest).getContent();
@@ -158,14 +166,7 @@ public class EventServiceImpl implements EventService {
             EventShortDto dto = eventMapper.toShortDto(event);
             dto.setViews(views.getOrDefault(event.getId(), 0L));
             dto.setConfirmedRequests(confirmedRequests.getOrDefault(event.getId(), 0L));
-
-            if (Boolean.TRUE.equals(params.getOnlyAvailable())) {
-                if (event.getParticipantLimit() == 0 || dto.getConfirmedRequests() < event.getParticipantLimit()) {
-                    result.add(dto);
-                }
-            } else {
-                result.add(dto);
-            }
+            result.add(dto);
         }
 
         if ("VIEWS".equals(params.getSort())) {
