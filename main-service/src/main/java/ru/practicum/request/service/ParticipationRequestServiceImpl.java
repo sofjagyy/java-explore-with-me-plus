@@ -59,7 +59,7 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
         user.setId(userDto.getId());
         user.setName(userDto.getName());
         user.setEmail(userDto.getEmail());
-        
+
         Event eventEntity = new Event();
         eventEntity.setId(event.getId());
 
@@ -69,8 +69,8 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
         }
 
         ParticipationRequest request = ParticipationRequest.builder()
-                .requesterId(user)
-                .eventId(eventEntity)
+                .requester(user)
+                .event(eventEntity)
                 .status(status)
                 .created(LocalDateTime.now())
                 .build();
@@ -92,7 +92,7 @@ public class ParticipationRequestServiceImpl implements ParticipationRequestServ
     public ParticipationRequestDto cancelRequest(Long userId, Long requestId) {
         ParticipationRequest request = repository.findById(requestId).orElseThrow(() -> new NotFoundException("Заявка не найдена"));
 
-        UserDto user = userService.getUser(request.getRequesterId().getId());
+        UserDto user = userService.getUser(request.getRequester().getId());
         if (!user.getId().equals(userId)) {
             log.error("Попытка отменить чужую заявку: userId={}, заявка принадлежит userId={}", userId, user.getId());
             throw new ConflictException("Пользователь, который не является автором заявки, не может её отменить.");

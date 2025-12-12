@@ -30,7 +30,7 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryDto create(NewCategoryDto newCategoryDto) {
         Category category = categoryMapper.toCategory(newCategoryDto);
         try {
-            category = categoryRepository.save(category);
+            category = categoryRepository.saveAndFlush(category);
         } catch (Exception e) {
              throw new ConflictException("Category with this name already exists");
         }
@@ -54,11 +54,11 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryDto update(Long catId, CategoryDto categoryDto) {
         Category category = categoryRepository.findById(catId)
                 .orElseThrow(() -> new NotFoundException("Category with id=" + catId + " was not found"));
-        
+
         category.setName(categoryDto.getName());
-        
+
         try {
-            category = categoryRepository.save(category);
+            category = categoryRepository.saveAndFlush(category);
         } catch (Exception e) {
             throw new ConflictException("Category with this name already exists");
         }

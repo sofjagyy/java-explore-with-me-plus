@@ -13,8 +13,12 @@ import ru.practicum.compilation.Compilation;
 import ru.practicum.compilation.repository.CompilationRepository;
 import ru.practicum.exception.NotFoundException;
 
+import ru.practicum.event.mapper.EventMapper;
+import ru.practicum.event.repository.EventRepository;
+import ru.practicum.event.Event;
+
 import java.util.List;
-import java.util.Set;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,6 +28,8 @@ import java.util.stream.Collectors;
 public class CompilationServiceImpl implements CompilationService {
 
     private final CompilationRepository compilationRepository;
+    private final EventRepository eventRepository;
+    private final EventMapper eventMapper;
 
     @Override
     @Transactional
@@ -31,9 +37,14 @@ public class CompilationServiceImpl implements CompilationService {
         log.info("Creating new compilation with title: {}", newCompilationDto.getTitle());
 
         Compilation compilation = CompilationMapper.toCompilation(newCompilationDto);
+        if (newCompilationDto.getEvents() != null && !newCompilationDto.getEvents().isEmpty()) {
+            List<Event> events = eventRepository.findAllById(newCompilationDto.getEvents());
+            compilation.setEvents(new HashSet<>(events));
+        }
+
         Compilation savedCompilation = compilationRepository.save(compilation);
 
-        return CompilationMapper.toCompilationDto(savedCompilation);
+        return CompilationMapper.toCompilationDto(savedCompilation, eventMapper);
     }
 
     @Override
@@ -65,11 +76,12 @@ public class CompilationServiceImpl implements CompilationService {
         }
 
         if (updateRequest.getEvents() != null) {
-            compilation.setEventIds((Set<Long>) updateRequest.getEvents());
+            List<Event> events = eventRepository.findAllById(updateRequest.getEvents());
+            compilation.setEvents(new HashSet<>(events));
         }
 
         Compilation updatedCompilation = compilationRepository.save(compilation);
-        return CompilationMapper.toCompilationDto(updatedCompilation);
+        return CompilationMapper.toCompilationDto(updatedCompilation, eventMapper);
     }
 
     @Override
@@ -79,13 +91,13 @@ public class CompilationServiceImpl implements CompilationService {
         if (pinned != null) {
             return compilationRepository.findAllByPinned(pinned, pageable)
                     .stream()
-                    .map(CompilationMapper::toCompilationDto)
+                    .map(compilation -> CompilationMapper.toCompilationDto(compilation, eventMapper))
                     .collect(Collectors.toList());
         }
 
         return compilationRepository.findAll(pageable)
                 .stream()
-                .map(CompilationMapper::toCompilationDto)
+                .map(compilation -> CompilationMapper.toCompilationDto(compilation, eventMapper))
                 .collect(Collectors.toList());
     }
 
@@ -96,6 +108,6 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation compilation = compilationRepository.findById(compId)
                 .orElseThrow(() -> new NotFoundException("Compilation with id=" + compId + " was not found"));
 
-        return CompilationMapper.toCompilationDto(compilation);
+        return CompilationMapper.toCompilationDto(compilation, eventMapper);
     }
 }

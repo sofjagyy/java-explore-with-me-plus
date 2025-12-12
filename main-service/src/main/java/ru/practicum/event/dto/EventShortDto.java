@@ -19,10 +19,10 @@ public class EventShortDto {
     private CategoryDto category;
     private Boolean paid;
     private UserShortDto initiator;
-    
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime eventDate;
-    
+
     private Long confirmedRequests;
     private Long views;
 }
