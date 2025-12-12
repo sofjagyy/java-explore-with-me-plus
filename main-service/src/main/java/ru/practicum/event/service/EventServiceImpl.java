@@ -81,7 +81,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
-    public EventFullDto updateEventAdmin(Long eventId, UpdateEventAdminRequest request) {
+    public EventFullDto updateEventAdmin(Long eventId, UpdateEventAdminDto request) {
         Event event = getEventByIdOrThrow(eventId);
 
         if (request.getEventDate() != null) {
@@ -91,13 +91,13 @@ public class EventServiceImpl implements EventService {
         }
 
         if (request.getStateAction() != null) {
-            if (request.getStateAction() == UpdateEventAdminRequest.StateAction.PUBLISH_EVENT) {
+            if (request.getStateAction() == UpdateEventAdminDto.StateAction.PUBLISH_EVENT) {
                 if (event.getState() != EventState.PENDING) {
                     throw new ConflictException("Cannot publish the event because it's not in the right state: " + event.getState());
                 }
                 event.setState(EventState.PUBLISHED);
                 event.setPublishedOn(LocalDateTime.now());
-            } else if (request.getStateAction() == UpdateEventAdminRequest.StateAction.REJECT_EVENT) {
+            } else if (request.getStateAction() == UpdateEventAdminDto.StateAction.REJECT_EVENT) {
                 if (event.getState() == EventState.PUBLISHED) {
                     throw new ConflictException("Cannot reject the event because it's already published");
                 }
@@ -143,7 +143,6 @@ public class EventServiceImpl implements EventService {
 
         Sort sortOrder = Sort.by(Sort.Direction.ASC, "eventDate");
         if ("VIEWS".equals(params.getSort())) {
-            // Сортировка по просмотрам будет выполнена после получения всех данных
         } else {
             sortOrder = Sort.by(Sort.Direction.ASC, "eventDate");
         }
@@ -230,7 +229,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
-    public EventFullDto updateEventUser(Long userId, Long eventId, UpdateEventUserRequest request) {
+    public EventFullDto updateEventUser(Long userId, Long eventId, UpdateEventUserDto request) {
         checkUser(userId);
         Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
                 .orElseThrow(() -> new NotFoundException("Event not found"));
@@ -246,9 +245,9 @@ public class EventServiceImpl implements EventService {
         }
 
         if (request.getStateAction() != null) {
-            if (request.getStateAction() == UpdateEventUserRequest.StateAction.SEND_TO_REVIEW) {
+            if (request.getStateAction() == UpdateEventUserDto.StateAction.SEND_TO_REVIEW) {
                 event.setState(EventState.PENDING);
-            } else if (request.getStateAction() == UpdateEventUserRequest.StateAction.CANCEL_REVIEW) {
+            } else if (request.getStateAction() == UpdateEventUserDto.StateAction.CANCEL_REVIEW) {
                 event.setState(EventState.CANCELED);
             }
         }
@@ -269,7 +268,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
-    public EventRequestStatusUpdateResult changeRequestStatus(Long userId, Long eventId, EventRequestStatusUpdateRequest request) {
+    public EventRequestStatusUpdateResult changeRequestStatus(Long userId, Long eventId, EventRequestStatusUpdateDto request) {
         checkUser(userId);
         Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
                 .orElseThrow(() -> new NotFoundException("Event not found"));
@@ -310,7 +309,7 @@ public class EventServiceImpl implements EventService {
         return new EventRequestStatusUpdateResult(confirmed, rejected);
     }
 
-    private Event updateEvent(Event event, BaseUpdateEventRequest request) {
+    private Event updateEvent(Event event, BaseUpdateEventDto request) {
         if (request.getTitle() != null) event.setTitle(request.getTitle());
         if (request.getAnnotation() != null) event.setAnnotation(request.getAnnotation());
         if (request.getDescription() != null) event.setDescription(request.getDescription());

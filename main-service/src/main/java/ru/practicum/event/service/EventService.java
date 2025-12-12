@@ -8,7 +8,7 @@ import java.util.List;
 public interface EventService {
     List<EventFullDto> getEventsAdmin(EventAdminFilterParams params);
 
-    EventFullDto updateEventAdmin(Long eventId, UpdateEventAdminRequest request);
+    EventFullDto updateEventAdmin(Long eventId, UpdateEventAdminDto request);
 
     List<EventShortDto> getEventsPublic(EventPublicFilterParams params);
 
@@ -20,11 +20,11 @@ public interface EventService {
 
     EventFullDto getEventUser(Long userId, Long eventId);
 
-    EventFullDto updateEventUser(Long userId, Long eventId, UpdateEventUserRequest request);
+    EventFullDto updateEventUser(Long userId, Long eventId, UpdateEventUserDto request);
 
     List<ru.practicum.request.dto.ParticipationRequestDto> getEventRequests(Long userId, Long eventId);
 
-    EventRequestStatusUpdateResult changeRequestStatus(Long userId, Long eventId, EventRequestStatusUpdateRequest request);
+    EventRequestStatusUpdateResult changeRequestStatus(Long userId, Long eventId, EventRequestStatusUpdateDto request);
 
     EventFullDto getEventById(Long eventId);
 }

@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class EventRequestStatusUpdateRequest {
+public class EventRequestStatusUpdateDto {
     private List<Long> requestIds;
     private RequestStatus status;
 }

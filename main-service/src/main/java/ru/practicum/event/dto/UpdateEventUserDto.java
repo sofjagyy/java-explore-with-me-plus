@@ -9,11 +9,12 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
 @NoArgsConstructor
-public class UpdateEventAdminRequest extends BaseUpdateEventRequest {
+public class UpdateEventUserDto extends BaseUpdateEventDto {
     private StateAction stateAction;
 
     public enum StateAction {
-        PUBLISH_EVENT,
-        REJECT_EVENT
+        SEND_TO_REVIEW,
+        CANCEL_REVIEW
     }
 }
+

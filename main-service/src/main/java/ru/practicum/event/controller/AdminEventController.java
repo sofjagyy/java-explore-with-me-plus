@@ -9,7 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.event.dto.EventAdminFilterParams;
 import ru.practicum.event.dto.EventFullDto;
-import ru.practicum.event.dto.UpdateEventAdminRequest;
+import ru.practicum.event.dto.UpdateEventAdminDto;
 import ru.practicum.event.service.EventService;
 
 import java.util.List;
@@ -49,7 +49,7 @@ public class AdminEventController {
 
     @PatchMapping("/{eventId}")
     public EventFullDto updateEvent(@PathVariable Long eventId,
-                                    @Valid @RequestBody UpdateEventAdminRequest request) {
+                                    @Valid @RequestBody UpdateEventAdminDto request) {
         log.info("Update event admin id={}, request={}", eventId, request);
         return eventService.updateEventAdmin(eventId, request);
     }

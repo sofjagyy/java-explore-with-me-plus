@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public abstract class BaseUpdateEventRequest {
+public abstract class BaseUpdateEventDto {
     @Size(min = 3, max = 120)
     private String title;
 
