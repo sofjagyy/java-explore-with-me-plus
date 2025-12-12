@@ -1,4 +1,4 @@
-package ru.practicum.user;
+package ru.practicum.category.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -6,20 +6,16 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "users")
+@Table(name = "categories")
 @Getter
 @Setter
 @ToString
-public class User {
+public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String name;
-
     @Column(nullable = false, unique = true)
-    private String email;
+    private String name;
 }
-

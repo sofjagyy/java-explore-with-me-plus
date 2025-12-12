@@ -10,16 +10,17 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatClient;
-import ru.practicum.category.Category;
+import ru.practicum.category.model.Category;
+import ru.practicum.category.model.QCategory;
 import ru.practicum.category.repository.CategoryRepository;
 import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.ViewStatsDto;
-import ru.practicum.event.Event;
-import ru.practicum.event.EventState;
-import ru.practicum.event.Location;
-import ru.practicum.event.QEvent;
 import ru.practicum.event.dto.*;
 import ru.practicum.event.mapper.EventMapper;
+import ru.practicum.event.model.Event;
+import ru.practicum.event.model.EventState;
+import ru.practicum.event.model.Location;
+import ru.practicum.event.model.QEvent;
 import ru.practicum.event.repository.EventRepository;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
@@ -30,7 +31,8 @@ import ru.practicum.request.model.ParticipationRequest;
 import ru.practicum.request.model.QParticipationRequest;
 import ru.practicum.request.repository.ConfirmedRequestView;
 import ru.practicum.request.repository.ParticipationRequestRepository;
-import ru.practicum.user.User;
+import ru.practicum.user.model.QUser;
+import ru.practicum.user.model.User;
 import ru.practicum.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
@@ -63,7 +65,9 @@ public class EventServiceImpl implements EventService {
             builder.and(qEvent.initiator.id.in(params.getUsers()));
         }
         if (params.getStates() != null && !params.getStates().isEmpty()) {
-            builder.and(qEvent.state.stringValue().in(params.getStates()));
+            builder.and(qEvent.state.in(params.getStates().stream()
+                    .map(EventState::valueOf)
+                    .collect(Collectors.toList())));
         }
         if (params.getCategories() != null && !params.getCategories().isEmpty()) {
             builder.and(qEvent.category.id.in(params.getCategories()));

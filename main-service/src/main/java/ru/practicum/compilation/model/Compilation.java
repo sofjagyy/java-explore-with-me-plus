@@ -1,10 +1,10 @@
-package ru.practicum.compilation;
+package ru.practicum.compilation.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import ru.practicum.event.Event;
+import ru.practicum.event.model.Event;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -35,4 +35,3 @@ public class Compilation {
     @ToString.Exclude
     private Set<Event> events = new HashSet<>();
 }
-
