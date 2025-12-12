@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatClient;
 import ru.practicum.category.model.Category;
-import ru.practicum.category.model.QCategory;
 import ru.practicum.category.repository.CategoryRepository;
 import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.ViewStatsDto;
@@ -31,7 +30,6 @@ import ru.practicum.request.model.ParticipationRequest;
 import ru.practicum.request.model.QParticipationRequest;
 import ru.practicum.request.repository.ConfirmedRequestView;
 import ru.practicum.request.repository.ParticipationRequestRepository;
-import ru.practicum.user.model.QUser;
 import ru.practicum.user.model.User;
 import ru.practicum.user.repository.UserRepository;
 
