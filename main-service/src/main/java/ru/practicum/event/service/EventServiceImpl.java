@@ -24,10 +24,10 @@ import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
 import ru.practicum.request.enums.RequestStatus;
-import ru.practicum.request.mapper.RequestMapper;
+import ru.practicum.request.mapper.ParticipationRequestMapper;
 import ru.practicum.request.model.ParticipationRequest;
 import ru.practicum.request.repository.ConfirmedRequestView;
-import ru.practicum.request.repository.RequestRepository;
+import ru.practicum.request.repository.ParticipationRequestRepository;
 import ru.practicum.user.User;
 import ru.practicum.user.repository.UserRepository;
 
@@ -45,10 +45,10 @@ public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
-    private final RequestRepository requestRepository;
+    private final ParticipationRequestRepository requestRepository;
     private final StatClient statClient;
     private final EventMapper eventMapper;
-    private final RequestMapper requestMapper;
+    private final ParticipationRequestMapper requestMapper;
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
