@@ -28,11 +28,10 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryDto create(NewCategoryDto newCategoryDto) {
         Category category = categoryMapper.toEntity(newCategoryDto);
         try {
-            category = categoryRepository.saveAndFlush(category);
+            return categoryMapper.toDto(categoryRepository.save(category));
         } catch (Exception e) {
              throw new ConflictException("Category with this name already exists");
         }
-        return categoryMapper.toDto(category);
     }
 
     @Override
@@ -55,11 +54,10 @@ public class CategoryServiceImpl implements CategoryService {
         category.setName(categoryDto.getName());
 
         try {
-            category = categoryRepository.saveAndFlush(category);
+            return categoryMapper.toDto(categoryRepository.saveAndFlush(category));
         } catch (Exception e) {
             throw new ConflictException("Category with this name already exists");
         }
-        return categoryMapper.toDto(category);
     }
 
     @Override
