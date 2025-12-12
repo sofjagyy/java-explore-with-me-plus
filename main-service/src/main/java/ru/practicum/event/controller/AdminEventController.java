@@ -5,7 +5,9 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.event.dto.EventAdminFilterParams;
 import ru.practicum.event.dto.EventFullDto;
 import ru.practicum.event.dto.UpdateEventAdminRequest;
 import ru.practicum.event.service.EventService;
@@ -16,6 +18,7 @@ import java.util.List;
 @RequestMapping("/admin/events")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class AdminEventController {
 
     private final EventService eventService;
@@ -30,7 +33,18 @@ public class AdminEventController {
                                         @RequestParam(defaultValue = "10") @Positive int size) {
         log.info("Get events admin users={}, states={}, categories={}, start={}, end={}, from={}, size={}",
                 users, states, categories, rangeStart, rangeEnd, from, size);
-        return eventService.getEventsAdmin(users, states, categories, rangeStart, rangeEnd, from, size);
+
+        EventAdminFilterParams params = EventAdminFilterParams.builder()
+                .users(users)
+                .states(states)
+                .categories(categories)
+                .rangeStart(rangeStart)
+                .rangeEnd(rangeEnd)
+                .from(from)
+                .size(size)
+                .build();
+
+        return eventService.getEventsAdmin(params);
     }
 
     @PatchMapping("/{eventId}")
@@ -40,4 +54,3 @@ public class AdminEventController {
         return eventService.updateEventAdmin(eventId, request);
     }
 }
-

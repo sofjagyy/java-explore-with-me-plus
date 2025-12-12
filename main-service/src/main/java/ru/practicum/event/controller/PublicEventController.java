@@ -5,8 +5,10 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.event.dto.EventFullDto;
+import ru.practicum.event.dto.EventPublicFilterParams;
 import ru.practicum.event.dto.EventShortDto;
 import ru.practicum.event.service.EventService;
 
@@ -16,6 +18,7 @@ import java.util.List;
 @RequestMapping("/events")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class PublicEventController {
 
     private final EventService eventService;
@@ -33,7 +36,21 @@ public class PublicEventController {
                                          HttpServletRequest request) {
         log.info("Get events public text={}, categories={}, paid={}, start={}, end={}, avail={}, sort={}, from={}, size={}",
                 text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
-        return eventService.getEventsPublic(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size, request);
+
+        EventPublicFilterParams params = EventPublicFilterParams.builder()
+                .text(text)
+                .categories(categories)
+                .paid(paid)
+                .rangeStart(rangeStart)
+                .rangeEnd(rangeEnd)
+                .onlyAvailable(onlyAvailable)
+                .sort(sort)
+                .from(from)
+                .size(size)
+                .request(request)
+                .build();
+
+        return eventService.getEventsPublic(params);
     }
 
     @GetMapping("/{id}")
@@ -42,4 +59,3 @@ public class PublicEventController {
         return eventService.getEventPublic(id, request);
     }
 }
-

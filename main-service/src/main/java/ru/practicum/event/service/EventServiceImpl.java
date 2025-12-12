@@ -53,28 +53,27 @@ public class EventServiceImpl implements EventService {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
-    public List<EventFullDto> getEventsAdmin(List<Long> users, List<String> states, List<Long> categories,
-                                             String rangeStart, String rangeEnd, int from, int size) {
+    public List<EventFullDto> getEventsAdmin(EventAdminFilterParams params) {
         BooleanBuilder builder = new BooleanBuilder();
         QEvent qEvent = QEvent.event;
 
-        if (users != null && !users.isEmpty()) {
-            builder.and(qEvent.initiator.id.in(users));
+        if (params.getUsers() != null && !params.getUsers().isEmpty()) {
+            builder.and(qEvent.initiator.id.in(params.getUsers()));
         }
-        if (states != null && !states.isEmpty()) {
-            builder.and(qEvent.state.stringValue().in(states));
+        if (params.getStates() != null && !params.getStates().isEmpty()) {
+            builder.and(qEvent.state.stringValue().in(params.getStates()));
         }
-        if (categories != null && !categories.isEmpty()) {
-            builder.and(qEvent.category.id.in(categories));
+        if (params.getCategories() != null && !params.getCategories().isEmpty()) {
+            builder.and(qEvent.category.id.in(params.getCategories()));
         }
-        if (rangeStart != null) {
-            builder.and(qEvent.eventDate.goe(parseTime(rangeStart)));
+        if (params.getRangeStart() != null) {
+            builder.and(qEvent.eventDate.goe(parseTime(params.getRangeStart())));
         }
-        if (rangeEnd != null) {
-            builder.and(qEvent.eventDate.loe(parseTime(rangeEnd)));
+        if (params.getRangeEnd() != null) {
+            builder.and(qEvent.eventDate.loe(parseTime(params.getRangeEnd())));
         }
 
-        PageRequest pageRequest = PageRequest.of(from / size, size);
+        PageRequest pageRequest = PageRequest.of(params.getFrom() / params.getSize(), params.getSize());
         List<Event> events = eventRepository.findAll(builder, pageRequest).getContent();
 
         return makeEventFullDtoList(events);
@@ -83,14 +82,12 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public EventFullDto updateEventAdmin(Long eventId, UpdateEventAdminRequest request) {
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
+        Event event = getEventByIdOrThrow(eventId);
 
         if (request.getEventDate() != null) {
             if (request.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
                 throw new ValidationException("Event date must be at least 1 hour from now");
             }
-            event.setEventDate(request.getEventDate());
         }
 
         if (request.getStateAction() != null) {
@@ -108,38 +105,32 @@ public class EventServiceImpl implements EventService {
             }
         }
 
-        updateEventCommonFields(event, request.getTitle(), request.getAnnotation(), request.getDescription(),
-                request.getCategory(), request.getLocation(), request.getPaid(), request.getParticipantLimit(),
-                request.getRequestModeration());
-
-        return toEventFullDtoWithStats(eventRepository.save(event));
+        return toEventFullDtoWithStats(updateEvent(event, request));
     }
 
     @Override
-    public List<EventShortDto> getEventsPublic(String text, List<Long> categories, Boolean paid,
-                                               String rangeStart, String rangeEnd, Boolean onlyAvailable,
-                                               String sort, int from, int size, HttpServletRequest request) {
+    public List<EventShortDto> getEventsPublic(EventPublicFilterParams params) {
 
-        sendStat(request);
+        sendStat(params.getRequest());
 
         BooleanBuilder builder = new BooleanBuilder();
         QEvent qEvent = QEvent.event;
 
         builder.and(qEvent.state.eq(EventState.PUBLISHED));
 
-        if (text != null && !text.isBlank()) {
-            builder.and(qEvent.annotation.containsIgnoreCase(text)
-                    .or(qEvent.description.containsIgnoreCase(text)));
+        if (params.getText() != null && !params.getText().isBlank()) {
+            builder.and(qEvent.annotation.containsIgnoreCase(params.getText())
+                    .or(qEvent.description.containsIgnoreCase(params.getText())));
         }
-        if (categories != null && !categories.isEmpty()) {
-            builder.and(qEvent.category.id.in(categories));
+        if (params.getCategories() != null && !params.getCategories().isEmpty()) {
+            builder.and(qEvent.category.id.in(params.getCategories()));
         }
-        if (paid != null) {
-            builder.and(qEvent.paid.eq(paid));
+        if (params.getPaid() != null) {
+            builder.and(qEvent.paid.eq(params.getPaid()));
         }
 
-        LocalDateTime start = (rangeStart != null) ? parseTime(rangeStart) : LocalDateTime.now();
-        LocalDateTime end = (rangeEnd != null) ? parseTime(rangeEnd) : null;
+        LocalDateTime start = (params.getRangeStart() != null) ? parseTime(params.getRangeStart()) : LocalDateTime.now();
+        LocalDateTime end = (params.getRangeEnd() != null) ? parseTime(params.getRangeEnd()) : null;
 
         if (end != null && start.isAfter(end)) {
             throw new ValidationException("Start date must be before end date");
@@ -151,13 +142,13 @@ public class EventServiceImpl implements EventService {
         }
 
         Sort sortOrder = Sort.by(Sort.Direction.ASC, "eventDate");
-        if ("VIEWS".equals(sort)) {
+        if ("VIEWS".equals(params.getSort())) {
             // Сортировка по просмотрам будет выполнена после получения всех данных
         } else {
             sortOrder = Sort.by(Sort.Direction.ASC, "eventDate");
         }
 
-        PageRequest pageRequest = PageRequest.of(from / size, size, sortOrder);
+        PageRequest pageRequest = PageRequest.of(params.getFrom() / params.getSize(), params.getSize(), sortOrder);
         List<Event> events = eventRepository.findAll(builder, pageRequest).getContent();
 
         Map<Long, Long> views = getViews(events);
@@ -169,7 +160,7 @@ public class EventServiceImpl implements EventService {
             dto.setViews(views.getOrDefault(event.getId(), 0L));
             dto.setConfirmedRequests(confirmedRequests.getOrDefault(event.getId(), 0L));
 
-            if (Boolean.TRUE.equals(onlyAvailable)) {
+            if (Boolean.TRUE.equals(params.getOnlyAvailable())) {
                 if (event.getParticipantLimit() == 0 || dto.getConfirmedRequests() < event.getParticipantLimit()) {
                     result.add(dto);
                 }
@@ -178,7 +169,7 @@ public class EventServiceImpl implements EventService {
             }
         }
 
-        if ("VIEWS".equals(sort)) {
+        if ("VIEWS".equals(params.getSort())) {
              result.sort(Comparator.comparing(EventShortDto::getViews).reversed());
         }
 
@@ -187,8 +178,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventFullDto getEventPublic(Long id, HttpServletRequest request) {
-        Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
+        Event event = getEventByIdOrThrow(id);
 
         if (event.getState() != EventState.PUBLISHED) {
             throw new NotFoundException("Event must be published");
@@ -253,7 +243,6 @@ public class EventServiceImpl implements EventService {
              if (request.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
                 throw new ValidationException("Event date must be at least 2 hours from now");
             }
-             event.setEventDate(request.getEventDate());
         }
 
         if (request.getStateAction() != null) {
@@ -264,11 +253,7 @@ public class EventServiceImpl implements EventService {
             }
         }
 
-        updateEventCommonFields(event, request.getTitle(), request.getAnnotation(), request.getDescription(),
-                request.getCategory(), request.getLocation(), request.getPaid(), request.getParticipantLimit(),
-                request.getRequestModeration());
-
-        return toEventFullDtoWithStats(eventRepository.save(event));
+        return toEventFullDtoWithStats(updateEvent(event, request));
     }
 
     @Override
@@ -325,23 +310,24 @@ public class EventServiceImpl implements EventService {
         return new EventRequestStatusUpdateResult(confirmed, rejected);
     }
 
-    private void updateEventCommonFields(Event event, String title, String annotation, String description,
-                                         Long categoryId, LocationDto location, Boolean paid, Integer participantLimit,
-                                         Boolean requestModeration) {
-        if (title != null) event.setTitle(title);
-        if (annotation != null) event.setAnnotation(annotation);
-        if (description != null) event.setDescription(description);
-        if (categoryId != null) {
-            Category category = categoryRepository.findById(categoryId)
+    private Event updateEvent(Event event, BaseUpdateEventRequest request) {
+        if (request.getTitle() != null) event.setTitle(request.getTitle());
+        if (request.getAnnotation() != null) event.setAnnotation(request.getAnnotation());
+        if (request.getDescription() != null) event.setDescription(request.getDescription());
+        if (request.getEventDate() != null) event.setEventDate(request.getEventDate());
+        if (request.getCategory() != null) {
+            Category category = categoryRepository.findById(request.getCategory())
                     .orElseThrow(() -> new NotFoundException("Category not found"));
             event.setCategory(category);
         }
-        if (location != null) {
-            event.setLocation(eventMapper.toLocation(location));
+        if (request.getLocation() != null) {
+            event.setLocation(eventMapper.toLocation(request.getLocation()));
         }
-        if (paid != null) event.setPaid(paid);
-        if (participantLimit != null) event.setParticipantLimit(participantLimit);
-        if (requestModeration != null) event.setRequestModeration(requestModeration);
+        if (request.getPaid() != null) event.setPaid(request.getPaid());
+        if (request.getParticipantLimit() != null) event.setParticipantLimit(request.getParticipantLimit());
+        if (request.getRequestModeration() != null) event.setRequestModeration(request.getRequestModeration());
+
+        return eventRepository.save(event);
     }
 
     private User checkUser(Long userId) {
@@ -429,8 +415,12 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventFullDto getEventById(Long eventId) {
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
+        Event event = getEventByIdOrThrow(eventId);
         return toEventFullDtoWithStats(event);
+    }
+
+    private Event getEventByIdOrThrow(Long eventId) {
+        return eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
     }
 }

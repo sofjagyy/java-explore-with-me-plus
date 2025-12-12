@@ -6,14 +6,11 @@ import ru.practicum.event.dto.*;
 import java.util.List;
 
 public interface EventService {
-    List<EventFullDto> getEventsAdmin(List<Long> users, List<String> states, List<Long> categories,
-                                      String rangeStart, String rangeEnd, int from, int size);
+    List<EventFullDto> getEventsAdmin(EventAdminFilterParams params);
 
     EventFullDto updateEventAdmin(Long eventId, UpdateEventAdminRequest request);
 
-    List<EventShortDto> getEventsPublic(String text, List<Long> categories, Boolean paid,
-                                        String rangeStart, String rangeEnd, Boolean onlyAvailable,
-                                        String sort, int from, int size, HttpServletRequest request);
+    List<EventShortDto> getEventsPublic(EventPublicFilterParams params);
 
     EventFullDto getEventPublic(Long id, HttpServletRequest request);
 
