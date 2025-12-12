@@ -20,7 +20,7 @@ public interface EventMapper {
     @Mapping(target = "createdOn", ignore = true)
     @Mapping(target = "publishedOn", ignore = true)
     @Mapping(target = "location", ignore = true)
-    Event toEvent(NewEventDto newEventDto);
+    Event toEntity(NewEventDto newEventDto);
 
     @Mapping(target = "id", ignore = true)
     Location toLocation(LocationDto locationDto);
@@ -29,10 +29,9 @@ public interface EventMapper {
 
     @Mapping(target = "confirmedRequests", ignore = true)
     @Mapping(target = "views", ignore = true)
-    EventFullDto toEventFullDto(Event event);
+    EventFullDto toFullDto(Event event);
 
     @Mapping(target = "confirmedRequests", ignore = true)
     @Mapping(target = "views", ignore = true)
-    EventShortDto toEventShortDto(Event event);
+    EventShortDto toShortDto(Event event);
 }
-

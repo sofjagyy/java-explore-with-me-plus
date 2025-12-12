@@ -29,14 +29,14 @@ public class CompilationServiceImpl implements CompilationService {
 
     private final CompilationRepository compilationRepository;
     private final EventRepository eventRepository;
-    private final EventMapper eventMapper;
+    private final CompilationMapper compilationMapper;
 
     @Override
     @Transactional
     public CompilationDto createCompilation(NewCompilationDto newCompilationDto) {
         log.info("Creating new compilation with title: {}", newCompilationDto.getTitle());
 
-        Compilation compilation = CompilationMapper.toCompilation(newCompilationDto);
+        Compilation compilation = compilationMapper.toEntity(newCompilationDto);
         if (newCompilationDto.getEvents() != null && !newCompilationDto.getEvents().isEmpty()) {
             List<Event> events = eventRepository.findAllById(newCompilationDto.getEvents());
             compilation.setEvents(new HashSet<>(events));
@@ -44,7 +44,7 @@ public class CompilationServiceImpl implements CompilationService {
 
         Compilation savedCompilation = compilationRepository.save(compilation);
 
-        return CompilationMapper.toCompilationDto(savedCompilation, eventMapper);
+        return compilationMapper.toDto(savedCompilation);
     }
 
     @Override
@@ -81,7 +81,7 @@ public class CompilationServiceImpl implements CompilationService {
         }
 
         Compilation updatedCompilation = compilationRepository.save(compilation);
-        return CompilationMapper.toCompilationDto(updatedCompilation, eventMapper);
+        return compilationMapper.toDto(updatedCompilation);
     }
 
     @Override
@@ -91,13 +91,13 @@ public class CompilationServiceImpl implements CompilationService {
         if (pinned != null) {
             return compilationRepository.findAllByPinned(pinned, pageable)
                     .stream()
-                    .map(compilation -> CompilationMapper.toCompilationDto(compilation, eventMapper))
+                    .map(compilationMapper::toDto)
                     .collect(Collectors.toList());
         }
 
         return compilationRepository.findAll(pageable)
                 .stream()
-                .map(compilation -> CompilationMapper.toCompilationDto(compilation, eventMapper))
+                .map(compilationMapper::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -108,6 +108,6 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation compilation = compilationRepository.findById(compId)
                 .orElseThrow(() -> new NotFoundException("Compilation with id=" + compId + " was not found"));
 
-        return CompilationMapper.toCompilationDto(compilation, eventMapper);
+        return compilationMapper.toDto(compilation);
     }
 }

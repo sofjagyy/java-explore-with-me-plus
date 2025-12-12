@@ -28,13 +28,13 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public CategoryDto create(NewCategoryDto newCategoryDto) {
-        Category category = categoryMapper.toCategory(newCategoryDto);
+        Category category = categoryMapper.toEntity(newCategoryDto);
         try {
             category = categoryRepository.saveAndFlush(category);
         } catch (Exception e) {
              throw new ConflictException("Category with this name already exists");
         }
-        return categoryMapper.toCategoryDto(category);
+        return categoryMapper.toDto(category);
     }
 
     @Override
@@ -62,14 +62,14 @@ public class CategoryServiceImpl implements CategoryService {
         } catch (Exception e) {
             throw new ConflictException("Category with this name already exists");
         }
-        return categoryMapper.toCategoryDto(category);
+        return categoryMapper.toDto(category);
     }
 
     @Override
     public List<CategoryDto> getAll(int from, int size) {
         int page = from / size;
         return categoryRepository.findAll(PageRequest.of(page, size)).stream()
-                .map(categoryMapper::toCategoryDto)
+                .map(categoryMapper::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -77,7 +77,7 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryDto getById(Long catId) {
         Category category = categoryRepository.findById(catId)
                 .orElseThrow(() -> new NotFoundException("Category with id=" + catId + " was not found"));
-        return categoryMapper.toCategoryDto(category);
+        return categoryMapper.toDto(category);
     }
 }
 

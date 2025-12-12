@@ -10,8 +10,7 @@ import ru.practicum.user.dto.UserRequestDto;
 public interface UserMapper {
 
     @Mapping(target = "id", ignore = true)
-    User toUser(UserRequestDto userRequestDto);
+    User toEntity(UserRequestDto userRequestDto);
 
-    UserDto toUserDto(User user);
+    UserDto toDto(User user);
 }
-

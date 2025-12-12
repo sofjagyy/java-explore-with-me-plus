@@ -26,13 +26,13 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserDto createUser(UserRequestDto userRequestDto) {
-        User user = userMapper.toUser(userRequestDto);
+        User user = userMapper.toEntity(userRequestDto);
         try {
             user = userRepository.save(user);
         } catch (Exception e) {
             throw new ConflictException("User with this email already exists");
         }
-        return userMapper.toUserDto(user);
+        return userMapper.toDto(user);
     }
 
     @Override
@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
         }
 
         return users.stream()
-                .map(userMapper::toUserDto)
+                .map(userMapper::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -56,7 +56,7 @@ public class UserServiceImpl implements UserService {
     public UserDto getUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User with id=" + userId + " was not found"));
-        return userMapper.toUserDto(user);
+        return userMapper.toDto(user);
     }
 
     @Override

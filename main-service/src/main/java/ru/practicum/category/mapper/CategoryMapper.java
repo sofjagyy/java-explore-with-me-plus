@@ -10,8 +10,7 @@ import ru.practicum.category.dto.NewCategoryDto;
 public interface CategoryMapper {
 
     @Mapping(target = "id", ignore = true)
-    Category toCategory(NewCategoryDto newCategoryDto);
+    Category toEntity(NewCategoryDto newCategoryDto);
 
-    CategoryDto toCategoryDto(Category category);
+    CategoryDto toDto(Category category);
 }
-
