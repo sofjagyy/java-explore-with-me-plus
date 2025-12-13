@@ -37,6 +37,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Slf4j
 @Service
@@ -157,6 +158,34 @@ public class EventServiceImpl implements EventService {
 
         Sort sortOrder = Sort.by(Sort.Direction.ASC, "eventDate");
 
+        if ("VIEWS".equals(params.getSort())) {
+            List<Event> events = StreamSupport.stream(eventRepository.findAll(builder).spliterator(), false)
+                    .collect(Collectors.toList());
+
+            Map<Long, Long> views = getViews(events);
+            Map<Long, Long> confirmedRequests = getConfirmedRequests(events);
+            List<EventShortDto> result = new ArrayList<>();
+
+            for (Event event : events) {
+                EventShortDto dto = eventMapper.toShortDto(event);
+                dto.setViews(views.getOrDefault(event.getId(), 0L));
+                dto.setConfirmedRequests(confirmedRequests.getOrDefault(event.getId(), 0L));
+                result.add(dto);
+            }
+
+            result.sort(Comparator.comparing(EventShortDto::getViews).reversed());
+
+            int from = params.getFrom();
+            int size = params.getSize();
+            int toIndex = Math.min(from + size, result.size());
+
+            if (from >= result.size()) {
+                return Collections.emptyList();
+            }
+
+            return result.subList(from, toIndex);
+        }
+
         PageRequest pageRequest = PageRequest.of(params.getFrom() / params.getSize(), params.getSize(), sortOrder);
         List<Event> events = eventRepository.findAll(builder, pageRequest).getContent();
 
@@ -169,10 +198,6 @@ public class EventServiceImpl implements EventService {
             dto.setViews(views.getOrDefault(event.getId(), 0L));
             dto.setConfirmedRequests(confirmedRequests.getOrDefault(event.getId(), 0L));
             result.add(dto);
-        }
-
-        if ("VIEWS".equals(params.getSort())) {
-             result.sort(Comparator.comparing(EventShortDto::getViews).reversed());
         }
 
         return result;
