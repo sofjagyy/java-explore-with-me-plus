@@ -6,9 +6,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.comment.dto.CommentDto;
 import ru.practicum.comment.dto.NewCommentDto;
+import ru.practicum.comment.dto.UpdateCommentDto;
 import ru.practicum.comment.model.Comment;
 import ru.practicum.comment.repository.CommentRepository;
 import ru.practicum.event.model.Event;
+import ru.practicum.event.model.EventState;
 import ru.practicum.event.repository.EventRepository;
 import ru.practicum.exception.NotFoundException;
 import ru.practicum.exception.ValidationException;
@@ -38,6 +40,10 @@ public class CommentServiceImpl implements CommentService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Событие с id=" + eventId + " не найдено"));
 
+        if (event.getState() != EventState.PUBLISHED) {
+            throw new ValidationException("Cannot comment on an unpublished event");
+        }
+
         Comment comment = commentMapper.toComment(newCommentDto);
         comment.setAuthor(author);
         comment.setEvent(event);
@@ -66,9 +72,35 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("Комментарий с id=" + commentId + " не найден"));
 
+        boolean isAuthor = comment.getAuthor().getId().equals(userId);
+        boolean isEventInitiator = comment.getEvent().getInitiator().getId().equals(userId);
+
+        if (!isAuthor && !isEventInitiator) {
+            throw new ValidationException("Пользователь с id=" + userId + " не имеет прав на удаление комментария с id=" + commentId);
+        }
+        commentRepository.delete(comment);
+    }
+
+    @Override
+    @Transactional
+    public void deleteCommentByAdmin(Long commentId) {
+        if (!commentRepository.existsById(commentId)) {
+            throw new NotFoundException("Комментарий с id=" + commentId + " не найден");
+        }
+        commentRepository.deleteById(commentId);
+    }
+
+    @Override
+    @Transactional
+    public CommentDto updateComment(Long userId, Long commentId, UpdateCommentDto updateCommentDto) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Комментарий с id=" + commentId + " не найден"));
+
         if (!comment.getAuthor().getId().equals(userId)) {
             throw new ValidationException("Пользователь с id=" + userId + " не является автором комментария с id=" + commentId);
         }
-        commentRepository.delete(comment);
+
+        comment.setText(updateCommentDto.getText());
+        return commentMapper.toCommentDto(commentRepository.save(comment));
     }
 }
