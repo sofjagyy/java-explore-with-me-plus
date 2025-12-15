@@ -27,8 +27,10 @@ public class PrivateCommentController {
     }
 
     @GetMapping("/comments")
-    public List<CommentDto> getCommentsByUser(@PathVariable Long userId) {
-        return commentService.getCommentsByUser(userId);
+    public List<CommentDto> getCommentsByUser(@PathVariable Long userId,
+                                              @RequestParam(defaultValue = "0") Integer from,
+                                              @RequestParam(defaultValue = "10") Integer size) {
+        return commentService.getCommentsByUser(userId, from, size);
     }
 
     @DeleteMapping("/comments/{commentId}")

@@ -1,6 +1,7 @@
 package ru.practicum.comment.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.comment.dto.CommentDto;
@@ -46,15 +47,15 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<CommentDto> getCommentsByEvent(Long eventId) {
-        return commentRepository.findAllByEvent_Id(eventId).stream()
+    public List<CommentDto> getCommentsByEvent(Long eventId, Integer from, Integer size) {
+        return commentRepository.findAllByEvent_Id(eventId, PageRequest.of(from / size, size)).stream()
                 .map(commentMapper::toCommentDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<CommentDto> getCommentsByUser(Long userId) {
-        return commentRepository.findAllByAuthor_Id(userId).stream()
+    public List<CommentDto> getCommentsByUser(Long userId, Integer from, Integer size) {
+        return commentRepository.findAllByAuthor_Id(userId, PageRequest.of(from / size, size)).stream()
                 .map(commentMapper::toCommentDto)
                 .collect(Collectors.toList());
     }

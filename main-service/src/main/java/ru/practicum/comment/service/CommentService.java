@@ -8,9 +8,9 @@ import java.util.List;
 public interface CommentService {
     CommentDto addComment(Long userId, Long eventId, NewCommentDto newCommentDto);
 
-    List<CommentDto> getCommentsByEvent(Long eventId);
+    List<CommentDto> getCommentsByEvent(Long eventId, Integer from, Integer size);
 
-    List<CommentDto> getCommentsByUser(Long userId);
+    List<CommentDto> getCommentsByUser(Long userId, Integer from, Integer size);
 
     void deleteComment(Long userId, Long commentId);
 }
